@@ -11,18 +11,29 @@ function isValidTailscaleAuthKey(key) {
 }
 
 
-// Example
-const key = process.env.TS_AUTH_KEY;
+function main() {
+    const key = process.env.TS_AUTH_KEY;
 
-if (!key) {
-    console.error("TS_AUTH_KEY is not set.");
-    process.exit(2);
+    if (!key) {
+        console.error("TS_AUTH_KEY is not set.");
+        return 2;
+    }
+
+    if (isValidTailscaleAuthKey(key)) {
+        console.log(
+            "Structurally valid contemporary Tailscale auth key."
+        );
+        return 0;
+    }
+
+    console.error("Invalid Tailscale auth key format.");
+    return 1;
 }
 
-if (isValidTailscaleAuthKey(key)) {
-    console.log("Structurally valid contemporary Tailscale auth key.");
-    process.exit(0);
-} else {
-    console.error("Invalid Tailscale auth key format.");
-    process.exit(1);
+module.exports = {
+    isValidTailscaleAuthKey,
+};
+
+if (require.main === module) {
+    process.exitCode = main();
 }

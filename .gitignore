@@ -2,3 +2,10 @@
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+
+# macOS metadata
+.DS_Store

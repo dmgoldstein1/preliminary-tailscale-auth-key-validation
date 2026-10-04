@@ -8,15 +8,22 @@ is_valid_tailscale_auth_key() {
 }
 
 
-if [[ -z "${TS_AUTH_KEY:-}" ]]; then
-    echo "TS_AUTH_KEY is not set." >&2
-    exit 2
-fi
+main() {
+    if [[ -z "${TS_AUTH_KEY:-}" ]]; then
+        echo "TS_AUTH_KEY is not set." >&2
+        return 2
+    fi
 
-if is_valid_tailscale_auth_key "$TS_AUTH_KEY"; then
-    echo "Structurally valid contemporary Tailscale auth key."
-    exit 0
-else
+    if is_valid_tailscale_auth_key "$TS_AUTH_KEY"; then
+        echo "Structurally valid contemporary Tailscale auth key."
+        return 0
+    fi
+
     echo "Invalid Tailscale auth key format." >&2
-    exit 1
+    return 1
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main
+    exit $?
 fi

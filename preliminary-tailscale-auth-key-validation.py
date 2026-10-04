@@ -14,9 +14,16 @@ def is_valid_tailscale_auth_key(key: str) -> bool:
     )
 
 
-key = getpass.getpass("Tailscale auth key: ")
+def main() -> int:
+    key = getpass.getpass("Tailscale auth key: ")
 
-if not is_valid_tailscale_auth_key(key):
-    raise SystemExit("Invalid Tailscale auth key format.")
+    if is_valid_tailscale_auth_key(key):
+        print("Structurally valid contemporary Tailscale auth key.")
+        return 0
 
-print("Structurally valid.")
+    print("Invalid Tailscale auth key format.")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
