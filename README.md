@@ -46,7 +46,7 @@ The same rule is implemented independently in Python, JavaScript, and Bash. The 
 A value must therefore contain:
 
 | Component | Requirement |
-|---|---|
+| --- | --- |
 | Prefix | `tskey-auth-` |
 | Identifier | 12 alphanumeric characters |
 | Marker | `CNTRL` |
@@ -79,26 +79,13 @@ Those properties can only be established by Tailscale's control plane.
 
 The intended workflow is:
 
-```text
-                         ┌───────────────────┐
-                         │ Candidate secret  │
-                         └─────────┬─────────┘
-                                   │
-                                   ▼
-                       ┌───────────────────────┐
-                       │ Local format validator │
-                       └───────────┬───────────┘
-                                   │
-                    ┌──────────────┴──────────────┐
-                    │                             │
-                 invalid                       valid
-                    │                             │
-                    ▼                             ▼
-             Reject locally              Send to Tailscale
-                                                  │
-                                      ┌───────────┴───────────┐
-                                      │                       │
-                                   rejected                accepted
+```mermaid
+flowchart TD
+    A[Candidate secret] --> B[Local format validator]
+    B -->|invalid| C[Reject locally]
+    B -->|valid| D[Send to Tailscale]
+    D -->|rejected| E[Rejected]
+    D -->|accepted| F[Accepted]
 ```
 
 Malformed or obviously inappropriate values never need to leave the machine.
@@ -298,7 +285,7 @@ fi
 The command-line implementations use conventional exit statuses:
 
 | Exit code | Meaning |
-|---:|---|
+| ---: | --- |
 | `0` | Structurally valid |
 | `1` | Invalid format |
 | `2` | Required input was not supplied |
@@ -323,7 +310,7 @@ The tests deliberately use **synthetic credentials** that match the format but a
 Test cases include:
 
 | Test | Expected result |
-|---|---|
+| --- | --- |
 | 32-character secret | Accept |
 | 33-character secret | Accept |
 | Wrong `tskey-api-` prefix | Reject |
@@ -395,7 +382,7 @@ bash tests/test_bash.sh
 GitHub Actions automatically runs the validators across multiple supported runtimes.
 
 | Implementation | CI environments |
-|---|---|
+| --- | --- |
 | Python | Python 3.10, 3.12, 3.14 on Ubuntu |
 | Node.js | Node.js 20, 22, 24 on Ubuntu |
 | Bash | Ubuntu and macOS |
