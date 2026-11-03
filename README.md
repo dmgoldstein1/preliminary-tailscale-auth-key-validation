@@ -3,13 +3,14 @@
 [![CI](https://github.com/dmgoldstein1/preliminary-tailscale-auth-key-validation/actions/workflows/ci.yml/badge.svg)](https://github.com/dmgoldstein1/preliminary-tailscale-auth-key-validation/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-green)
+![Go](https://img.shields.io/badge/Go-1.21%2B-blue)
 ![Bash](https://img.shields.io/badge/Bash-3.2%2B-lightgrey)
 ![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 ![Network](https://img.shields.io/badge/network%20access-none-brightgreen)
 
 **Offline structural validation for contemporary Tailscale authentication keys.**
 
-This repository provides equivalent Tailscale auth-key validators in **Python**, **Node.js**, and **pure Bash**.
+This repository provides equivalent Tailscale auth-key validators in **Python**, **Node.js**, **Go**, and **pure Bash**.
 
 The validators perform no network requests and have no third-party dependencies. They are intended as a preliminary check before a candidate credential is ever transmitted to Tailscale.
 
@@ -17,13 +18,13 @@ The validators perform no network requests and have no third-party dependencies.
 
 - Fully offline validation
 - No third-party dependencies
-- Python, Node.js, and pure-Bash implementations
+- Python, Node.js, Go, and pure-Bash implementations
 - Strict contemporary auth-key format checking
 - Rejects other Tailscale credential types
 - Rejects truncated or malformed keys
 - Rejects whitespace and unexpected characters
 - Suitable for installers, bootstrap scripts, CI/CD, containers, and provisioning systems
-- Automated tests for all three implementations
+- Automated tests for all four implementations
 - GitHub Actions CI
 
 ## Validation Rule
@@ -41,7 +42,7 @@ This project validates them with:
 ^tskey-auth-[A-Za-z0-9]{12}CNTRL-[A-Za-z0-9]{32,33}$
 ```
 
-The same rule is implemented independently in Python, JavaScript, and Bash. The canonical expression is also stored in [`regex.txt`](./regex.txt).
+The same rule is implemented independently in Python, JavaScript, Go, and Bash. The canonical expression is also stored in [`regex.txt`](./regex.txt).
 
 A value must therefore contain:
 
@@ -97,11 +98,16 @@ Malformed or obviously inappropriate values never need to leave the machine.
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
+├── cmd/
+│   └── validator/
+│       ├── main.go
+│       └── main_test.go
 ├── tests/
 │   ├── run-all.sh
 │   ├── test_bash.sh
 │   ├── test_node.js
 │   └── test_python.py
+├── go.mod
 ├── preliminary-tailscale-auth-key-validation-interactive.sh
 ├── preliminary-tailscale-auth-key-validation-non-interactive.sh
 ├── preliminary-tailscale-auth-key-validation.js
@@ -222,6 +228,58 @@ if (isValidTailscaleAuthKey(candidate)) {
 ```
 
 No npm packages are required. The CLI only runs when the file is the entry point (`require.main === module` guard).
+
+## Go
+
+### Requirements
+
+Go 1.21 or later.
+
+No third-party packages are required.
+
+### Usage
+
+Provide the credential through `TS_AUTH_KEY` or stdin:
+
+```bash
+export TS_AUTH_KEY='tskey-auth-...'
+go run ./cmd/validator
+```
+
+Or interactively:
+
+```bash
+go run ./cmd/validator
+# enter the key when prompted
+```
+
+Successful validation returns:
+
+```text
+Structurally valid contemporary Tailscale auth key.
+```
+
+Malformed input returns:
+
+```text
+Invalid Tailscale auth key format.
+```
+
+### As a Go Function
+
+The validator lives in `cmd/validator/main.go`:
+
+```go
+if IsValidTailscaleAuthKey(candidate) {
+    fmt.Println("Structurally valid")
+}
+```
+
+### Build
+
+```bash
+go build -o tailscale-auth-key-validator ./cmd/validator
+```
 
 ## Bash
 
@@ -349,6 +407,9 @@ OK
 ✔ accepts a 33-character secret
 ...
 
+==> Go tests
+ok  	preliminary-tailscale-auth-key-validation/cmd/validator	0.164s
+
 ==> Bash tests
 PASS: 32-character secret
 PASS: 33-character secret
@@ -371,6 +432,12 @@ node --test tests/test_node.js
 
 Node's built-in test runner is used, so no test framework needs to be installed.
 
+### Go Only
+
+```bash
+go test ./...
+```
+
 ### Bash Only
 
 ```bash
@@ -385,6 +452,7 @@ GitHub Actions automatically runs the validators across multiple supported runti
 | --- | --- |
 | Python | Python 3.10, 3.12, 3.14 on Ubuntu |
 | Node.js | Node.js 20, 22, 24 on Ubuntu |
+| Go | Go 1.21, 1.22, 1.23 on Ubuntu |
 | Bash | Ubuntu and macOS |
 | Dependencies | None |
 
@@ -509,7 +577,7 @@ Each implementation should remain:
 
 **Auditable.** The validation logic should remain simple enough to inspect at a glance.
 
-**Consistent.** Python, JavaScript, and Bash should accept and reject the same input.
+**Consistent.** Python, JavaScript, Go, and Bash should accept and reject the same input.
 
 ## Compatibility
 
@@ -533,6 +601,12 @@ r"^tskey-auth-[A-Za-z0-9]{12}CNTRL-[A-Za-z0-9]{32,33}$"
 /^tskey-auth-[A-Za-z0-9]{12}CNTRL-[A-Za-z0-9]{32,33}$/
 ```
 
+### Go
+
+```go
+regexp.MustCompile(`^tskey-auth-[A-Za-z0-9]{12}CNTRL-[A-Za-z0-9]{32,33}$`)
+```
+
 ### Bash
 
 ```bash
@@ -551,7 +625,7 @@ Before submitting a pull request:
 bash tests/run-all.sh
 ```
 
-All three validator suites should pass.
+All four validator suites should pass.
 
 Changes to the validation rule should include new positive and negative test vectors demonstrating the intended behavior.
 
