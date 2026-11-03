@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Run every validator test suite (Python, Node.js, Bash).
+# Run every validator test suite (Python, Node.js, Go, Bash).
 #
 # Usage:
 #   bash tests/run-all.sh
@@ -18,6 +18,10 @@ python3 -m unittest tests/test_python.py
 echo
 echo "==> Node.js tests"
 node --test tests/test_node.js
+
+echo
+echo "==> Go tests"
+go test ./...
 
 echo
 echo "==> Bash tests"
